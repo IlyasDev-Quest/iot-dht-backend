@@ -1,8 +1,9 @@
-from typing import Annotated, Sequence
 from fastapi import APIRouter, Query
 from datetime import datetime
 
-from sqlmodel import select
+from fastapi_pagination.limit_offset import LimitOffsetPage
+from fastapi_pagination.ext.sqlmodel import paginate
+from sqlmodel import asc, select
 from models.dht11_models import DHT11Reading
 from core.db import DBSession
 
@@ -18,14 +19,19 @@ async def get_test():
         "timestamp": datetime.now()
     }
 
-@router.get("/")
-async def get_all(
+@router.get("/readings", response_model=LimitOffsetPage[DHT11Reading])
+def get_readings(
     session: DBSession,
-    offset: int = 0,
-    limit: Annotated[int, Query(le=100)] = 100,
-) -> Sequence[DHT11Reading]:
-    readings = session.exec(
-        select(DHT11Reading).offset(offset).limit(limit)
-    ).all()
-    return readings
+    start: datetime | None = Query(None, description="Start timestamp"),
+    end: datetime | None = Query(None, description="End timestamp")
+):
+    query = select(DHT11Reading)
+
+    if start is not None:
+        query = query.where(DHT11Reading.timestamp >= start)
+    if end is not None:
+        query = query.where(DHT11Reading.timestamp <= end)
+
+    query = query.order_by(asc(DHT11Reading.timestamp))
     
+    return paginate(session, query)
