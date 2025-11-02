@@ -1,14 +1,13 @@
-import os
 from pydantic_settings import BaseSettings
-
+from typing import List
 
 class Settings(BaseSettings):
     app_name: str = "IoT DHT Project"
-    environment: str = os.getenv("ENV", "dev")
-    database_url: str = os.getenv("DATABASE_URL", f"sqlite:///./database.db")
+    environment: str = "dev"
+    database_url: str = "sqlite:///./database.db"
+    cors_origins: List[str] = ["http://localhost:3000"]
 
     class Config:
         env_file = ".env"
-
 
 settings = Settings()

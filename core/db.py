@@ -13,6 +13,11 @@ async def create_db_and_tables():
     SQLModel.metadata.create_all(engine)
     print("Database and tables created.")
 
+async def close_db_connection():
+    print("Closing database connections...")
+    engine.dispose()
+    print("Database connections closed.")
+
 
 def get_session() -> Generator[Session, None, None]:
     with Session(engine) as session:
