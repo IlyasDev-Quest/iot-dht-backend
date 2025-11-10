@@ -4,6 +4,7 @@ from datetime import datetime
 from fastapi_pagination.limit_offset import LimitOffsetPage
 from fastapi_pagination.ext.sqlmodel import paginate
 from sqlmodel import asc, desc, select
+from core.events import dispatch_event
 from schemas.dht11_schemas import DHT11ReadingData
 from models.dht11_models import DHT11Reading
 from core.db import DBSession
@@ -55,6 +56,8 @@ def create_reading(
     session.add(new_reading)
     session.commit()
     session.refresh(new_reading)
+
+    dispatch_event("dht11_reading_created")
 
     return new_reading
 
