@@ -28,6 +28,7 @@ class DHT11Service:
     ) -> list[DHT11ChartData]:
         # Define time bucket based on group_by
         time_format = {
+            "minute": "%Y-%m-%d %H:%M:00",
             "hour": "%Y-%m-%d %H:00:00",
             "day": "%Y-%m-%d",
             "week": "%Y-%W",

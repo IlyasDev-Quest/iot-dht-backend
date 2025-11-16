@@ -20,12 +20,24 @@ def get_readings(session: DBSession,
         raise HTTPException(status_code=422, detail=str(e))
     return paginate(session, query)
 
+# routes/dht11_routes.py
 @router.get("/readings/chart", response_model=list[DHT11ChartData])
 def get_readings_chart(
     session: DBSession,
-    start_date: datetime = Query(..., description="Start date for chart data"),
-    end_date: datetime = Query(..., description="End date for chart data"),
-    group_by: Literal["hour", "day", "week", "month"] = Query("day", description="Aggregation interval")
+    start_date: datetime = Query(
+        ...,
+        description="Start date for chart data (inclusive)",
+        example="2025-01-01T00:00:00Z"
+    ),
+    end_date: datetime = Query(
+        ...,
+        description="End date for chart data (inclusive)",
+        example="2025-01-31T23:59:59Z"
+    ),
+    group_by: Literal["minute", "hour", "day", "week", "month"] = Query(
+        "day",
+        description="Time interval for data aggregation"
+    )
 ):
     try:
         return DHT11Service.get_aggregated_readings(session, start_date, end_date, group_by)
