@@ -1,9 +1,10 @@
+from typing import Literal
 from fastapi import APIRouter, HTTPException, Query
 from fastapi_pagination.limit_offset import LimitOffsetPage
 from fastapi_pagination.ext.sqlmodel import paginate
 from datetime import datetime
 from core.db import DBSession
-from schemas.dht11_schemas import DHT11ReadingData
+from schemas.dht11_schemas import DHT11ChartData, DHT11ReadingData
 from models.dht11_models import DHT11Reading
 from services.dht11_service import DHT11Service
 
@@ -11,13 +12,25 @@ router = APIRouter(prefix="/dht11", tags=["dht11"])
 
 @router.get("/readings", response_model=LimitOffsetPage[DHT11Reading])
 def get_readings(session: DBSession,
-                 start: datetime | None = Query(None),
-                 end: datetime | None = Query(None)):
+                 start_date: datetime | None = Query(None),
+                 end_date: datetime | None = Query(None)):
     try:
-        query = DHT11Service.get_readings(start, end)
+        query = DHT11Service.get_readings(start_date, end_date)
     except ValueError as e:
         raise HTTPException(status_code=422, detail=str(e))
     return paginate(session, query)
+
+@router.get("/readings/chart", response_model=list[DHT11ChartData])
+def get_readings_chart(
+    session: DBSession,
+    start_date: datetime = Query(..., description="Start date for chart data"),
+    end_date: datetime = Query(..., description="End date for chart data"),
+    group_by: Literal["hour", "day", "week", "month"] = Query("day", description="Aggregation interval")
+):
+    try:
+        return DHT11Service.get_aggregated_readings(session, start_date, end_date, group_by)
+    except ValueError as e:
+        raise HTTPException(status_code=422, detail=str(e))
 
 @router.post("/readings", response_model=DHT11Reading, status_code=201)
 def create_reading(session: DBSession, reading_data: DHT11ReadingData):
