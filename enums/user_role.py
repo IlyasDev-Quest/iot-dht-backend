@@ -1,0 +1,10 @@
+from enum import Enum
+
+class UserRole(Enum):
+    CEO = 7
+    PHARMA_MANAGER = 6
+    PROCUREMENT_MANAGER = 5
+    TECHNICAL_MANAGER = 4
+    SITE_MANAGER = 3
+    SITE_PHARMA_MANAGER = 2
+    TECHNICAL_FRIDGE_MANAGER = 1

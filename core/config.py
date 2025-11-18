@@ -6,6 +6,7 @@ class Settings(BaseSettings):
     environment: str = "dev"
     database_url: str = "sqlite:///./database.db"
     cors_origins: List[str] = ["http://localhost:3000"]
+    secret_key: str = "super-secret-key"
 
     class Config:
         env_file = ".env"

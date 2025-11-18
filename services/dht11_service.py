@@ -1,31 +1,42 @@
 from datetime import datetime
-from sqlmodel import func, select, asc, desc, text
-from schemas.dht11_schemas import DHT11ChartData
-from core.db import DBSession
+from typing import Literal
+from sqlmodel import Session
+from fastapi_pagination.limit_offset import LimitOffsetPage
+from fastapi_pagination.ext.sqlmodel import paginate
+from repositories.dht11_repository_protocol import DHT11RepositoryProtocol
+from schemas.dht11 import DHT11ChartData, DHT11ReadingData
 from models.dht11_models import DHT11Reading
 from core.events import dispatch_event
 
 class DHT11Service:
-    @staticmethod
-    def get_readings(start_date: datetime | None, end_date: datetime | None):
-        if start_date and end_date and start_date > end_date:
-            raise ValueError("start_date date must be before end_date date")
-        
-        query = select(DHT11Reading)
-        if start_date:
-            query = query.where(DHT11Reading.timestamp >= start_date)
-        if end_date:
-            query = query.where(DHT11Reading.timestamp <= end_date)
-        query = query.order_by(asc(DHT11Reading.timestamp))
-        return query
+    def __init__(self, repository: DHT11RepositoryProtocol, session: Session):
+        self.repository = repository
+        self.session = session
     
-    @staticmethod
+    def get_readings(
+        self,
+        start_date: datetime | None = None,
+        end_date: datetime | None = None,
+        limit: int = 50,
+        offset: int = 0
+    ) -> LimitOffsetPage[DHT11Reading]:
+        """Get paginated readings with optional date filters."""
+        if start_date and end_date and start_date > end_date:
+            raise ValueError("start_date must be before end_date")
+        
+        query = self.repository.get_readings_query(start_date, end_date)
+        return paginate(self.session, query)
+    
     def get_aggregated_readings(
-        session, 
-        start_date: datetime, 
-        end_date: datetime, 
-        group_by: str
+        self,
+        start_date: datetime,
+        end_date: datetime,
+        group_by: Literal["minute", "hour", "day", "week", "month"]
     ) -> list[DHT11ChartData]:
+        """Get aggregated readings for charting."""
+        if start_date > end_date:
+            raise ValueError("start_date must be before end_date")
+        
         # Define time bucket based on group_by
         time_format = {
             "minute": "%Y-%m-%d %H:%M:00",
@@ -35,27 +46,11 @@ class DHT11Service:
             "month": "%Y-%m"
         }[group_by]
         
-        # Use raw SQL for aggregation with text()
-        raw_query = text(f"""
-        SELECT 
-            strftime('{time_format}', timestamp) as time_bucket,
-            AVG(temperature) as avg_temperature,
-            AVG(humidity) as avg_humidity,
-            MIN(temperature) as min_temperature,
-            MAX(temperature) as max_temperature,
-            MIN(humidity) as min_humidity,
-            MAX(humidity) as max_humidity,
-            COUNT(*) as reading_count
-        FROM dht11reading
-        WHERE timestamp >= :start_date AND timestamp <= :end_date
-        GROUP BY time_bucket
-        ORDER BY time_bucket
-        """)
-        
-        results = session.exec(
-            raw_query,
-            params={"start_date": start_date, "end_date": end_date}
-        ).all()
+        results = self.repository.get_aggregated_readings(
+            start_date, 
+            end_date, 
+            time_format
+        )
         
         return [
             DHT11ChartData(
@@ -70,17 +65,13 @@ class DHT11Service:
             )
             for r in results
         ]
-
-    @staticmethod
-    def create_reading(session: DBSession, temperature: float, humidity: float) -> DHT11Reading:
-        reading = DHT11Reading(temperature=temperature, humidity=humidity)
-        session.add(reading)
-        session.commit()
-        session.refresh(reading)
+    
+    def create_reading(self, reading_data: DHT11ReadingData) -> DHT11Reading:
+        """Create a new DHT11 reading."""
+        reading = self.repository.create_reading(reading_data)
         dispatch_event("dht11_reading_created")
         return reading
-
-    @staticmethod
-    def get_latest_reading(session: DBSession) -> DHT11Reading | None:
-        query = select(DHT11Reading).order_by(desc(DHT11Reading.timestamp)).limit(1)
-        return session.exec(query).first()
+    
+    def get_latest_reading(self) -> DHT11Reading | None:
+        """Get the most recent reading."""
+        return self.repository.get_latest_reading()

@@ -1,11 +1,11 @@
-from sqlmodel import SQLModel, Field
+from pydantic import BaseModel, Field
 from datetime import datetime
 
-class DHT11ReadingData(SQLModel):
+class DHT11ReadingData(BaseModel):
     temperature: float = Field(..., description="Temperature in Celsius")
     humidity: float = Field(..., description="Relative humidity in %")
 
-class DHT11ChartData(SQLModel):
+class DHT11ChartData(BaseModel):
     timestamp: datetime = Field(..., description="Timestamp of the aggregated period")
     avg_temperature: float = Field(..., description="Average temperature in Celsius")
     avg_humidity: float = Field(..., description="Average relative humidity in %")
