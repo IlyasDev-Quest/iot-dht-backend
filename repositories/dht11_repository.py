@@ -1,5 +1,7 @@
 from datetime import datetime
 from typing import Any
+from fastapi_pagination import LimitOffsetPage
+from fastapi_pagination.ext.sqlmodel import paginate
 from sqlmodel import func, select, asc, desc, Session
 from models.dht11_models import DHT11Reading
 from schemas.dht11 import DHT11ReadingData
@@ -8,19 +10,21 @@ class DHT11Repository:
     def __init__(self, session: Session):
         self.session = session
     
-    def get_readings_query(
-        self, 
-        start_date: datetime | None = None, 
-        end_date: datetime | None = None
-    ) -> Any:
-        """Returns a query for readings with optional date filters."""
+    def get_readings(
+        self,
+        start_date: datetime | None,
+        end_date: datetime | None,
+    ) -> LimitOffsetPage[DHT11Reading]:
+        
         query = select(DHT11Reading)
         if start_date:
             query = query.where(DHT11Reading.timestamp >= start_date)
         if end_date:
             query = query.where(DHT11Reading.timestamp <= end_date)
+
         query = query.order_by(asc(DHT11Reading.timestamp))
-        return query
+
+        return paginate(self.session, query)
     
     def get_aggregated_readings(
         self,

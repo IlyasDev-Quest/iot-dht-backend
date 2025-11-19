@@ -9,9 +9,8 @@ from models.dht11_models import DHT11Reading
 from core.events import dispatch_event
 
 class DHT11Service:
-    def __init__(self, repository: DHT11RepositoryProtocol, session: Session):
+    def __init__(self, repository: DHT11RepositoryProtocol):
         self.repository = repository
-        self.session = session
     
     def get_readings(
         self,
@@ -19,13 +18,11 @@ class DHT11Service:
         end_date: datetime | None = None,
         limit: int = 50,
         offset: int = 0
-    ) -> LimitOffsetPage[DHT11Reading]:
-        """Get paginated readings with optional date filters."""
+    ):
         if start_date and end_date and start_date > end_date:
             raise ValueError("start_date must be before end_date")
-        
-        query = self.repository.get_readings_query(start_date, end_date)
-        return paginate(self.session, query)
+
+        return self.repository.get_readings(start_date, end_date)
     
     def get_aggregated_readings(
         self,

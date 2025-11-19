@@ -18,7 +18,7 @@ def get_dht11_repository(session: DBSession) -> DHT11Repository:
 
 DHT11RepositoryDep = Annotated[DHT11Repository, Depends(get_dht11_repository)]
 
-def get_dht11_service(repository: DHT11RepositoryDep, session: DBSession) -> DHT11Service:
-    return DHT11Service(repository, session)
+def get_dht11_service(repository: DHT11RepositoryDep) -> DHT11Service:
+    return DHT11Service(repository)
 
 DHT11ServiceDep = Annotated[DHT11Service, Depends(get_dht11_service)]
