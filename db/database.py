@@ -10,6 +10,7 @@ async def create_db_and_tables():
     SQLModel.metadata.create_all(engine)
     print("Database and tables created.")
 
+
 async def close_db_connection():
     print("Closing database connections...")
     engine.dispose()

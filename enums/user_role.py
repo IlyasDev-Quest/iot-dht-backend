@@ -1,5 +1,6 @@
 from enum import Enum
 
+
 class UserRole(Enum):
     CEO = 7
     PHARMA_MANAGER = 6

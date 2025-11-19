@@ -8,11 +8,13 @@ from core.config import settings
 
 from fastapi.middleware.cors import CORSMiddleware
 
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Startup code
     await create_db_and_tables()
     yield
+
 
 app = FastAPI(lifespan=lifespan)
 app.include_router(v1_router, prefix="/api")

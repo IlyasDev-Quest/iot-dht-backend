@@ -8,6 +8,7 @@ from core.session.backend import session_backend
 
 from fastapi_sessions.backends.implementations import InMemoryBackend
 
+
 class BasicVerifier(SessionVerifier[UUID, SessionData]):
     def __init__(
         self,
@@ -49,5 +50,3 @@ verifier = BasicVerifier(
     backend=session_backend,
     auth_http_exception=HTTPException(status_code=403, detail="invalid session"),
 )
-
-CurrentUser = Annotated[SessionData, Depends(verifier)]

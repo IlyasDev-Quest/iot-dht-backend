@@ -4,13 +4,14 @@ from fastapi_pagination import LimitOffsetPage
 from datetime import datetime
 from dependencies import DHT11ServiceDep
 from schemas.dht11 import DHT11ChartData, DHT11ReadingData
-from models.dht11_models import DHT11Reading
+from models.dht11 import DHT11Reading
 
 router = APIRouter(prefix="/dht11", tags=["dht11"])
 
+
 @router.get("/readings", response_model=LimitOffsetPage[DHT11Reading])
 def get_readings(
-    service: DHT11ServiceDep, 
+    service: DHT11ServiceDep,
     start_date: datetime | None = Query(None),
     end_date: datetime | None = Query(None),
 ):
@@ -27,16 +28,15 @@ def get_readings_chart(
     start_date: datetime = Query(
         ...,
         description="Start date for chart data (inclusive)",
-        example="2025-01-01T00:00:00Z"
+        example="2025-01-01T00:00:00Z",
     ),
     end_date: datetime = Query(
         ...,
         description="End date for chart data (inclusive)",
-        example="2025-01-31T23:59:59Z"
+        example="2025-01-31T23:59:59Z",
     ),
     group_by: Literal["minute", "hour", "day", "week", "month"] = Query(
-        "day",
-        description="Time interval for data aggregation"
+        "day", description="Time interval for data aggregation"
     ),
 ):
     """Get aggregated DHT11 readings for charting."""
