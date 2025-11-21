@@ -16,3 +16,12 @@ class UserRepository(UserRepositoryProtocol):
         statement = select(User).where(User.email == user_email)
         user = self.session.exec(statement).first()
         return user
+
+    def get_user_by_id(self, user_id: int) -> User | None:
+        """
+        Retrieve a user by their ID.
+        Returns None if no user is found.
+        """
+        statement = select(User).where(User.id == user_id)
+        user = self.session.exec(statement).first()
+        return user

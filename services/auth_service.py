@@ -1,5 +1,6 @@
 from uuid import uuid4, UUID
 
+from enums.user_role import UserRole
 from schemas.session import SessionData
 from core.security import verify_password
 from core.session.backend import session_backend as backend
@@ -18,12 +19,23 @@ class AuthService:
             return None
         return await self._create_session(user)
 
+    async def fake_authenticate(self) -> UUID:
+        user = User(
+            id=0,
+            first_name="Fake",
+            last_name="User",
+            email="hello@gmail.com",
+            user_role=UserRole.CEO,
+            hashed_password="",
+        )
+        return await self._create_session(user)
+
     async def _create_session(self, user: User) -> UUID:
+        if user.id is None:
+            raise ValueError("Cannot create a session for a user without an ID")
         session_id = uuid4()
         data = SessionData(
-            firstname=user.first_name,
-            lastname=user.last_name,
-            email=user.email,
+            user_id=user.id,
             user_role=user.user_role,
         )
         await backend.create(session_id, data)

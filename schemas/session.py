@@ -3,7 +3,5 @@ from enums.user_role import UserRole
 
 
 class SessionData(BaseModel):
-    firstname: str = Field(...)
-    lastname: str = Field(...)
-    email: str = Field(...)
+    user_id: int = Field(...)
     user_role: UserRole = Field(...)

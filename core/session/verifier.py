@@ -1,11 +1,11 @@
-from typing import Annotated
+# core/session/verifier.py
+from typing import Optional
 from uuid import UUID
 from fastapi_sessions.session_verifier import SessionVerifier
-from fastapi import Depends, HTTPException
+from fastapi import HTTPException, Cookie
 
 from schemas.session import SessionData
-from core.session.backend import session_backend
-
+from core.session.backend import session_backend as backend
 from fastapi_sessions.backends.implementations import InMemoryBackend
 
 
@@ -47,6 +47,6 @@ class BasicVerifier(SessionVerifier[UUID, SessionData]):
 verifier = BasicVerifier(
     identifier="general_verifier",
     auto_error=True,
-    backend=session_backend,
+    backend=backend,
     auth_http_exception=HTTPException(status_code=403, detail="invalid session"),
 )
