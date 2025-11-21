@@ -17,7 +17,7 @@ class AuthService:
         user = self.user_repo.get_user_by_email(credentials.email)
         if not user or not verify_password(credentials.password, user.hashed_password):
             return None
-        return await self._create_session(user)
+        return await self.create_session(user)
 
     async def fake_authenticate(self) -> UUID:
         user = User(
@@ -28,9 +28,9 @@ class AuthService:
             user_role=UserRole.CEO,
             hashed_password="",
         )
-        return await self._create_session(user)
+        return await self.create_session(user)
 
-    async def _create_session(self, user: User) -> UUID:
+    async def create_session(self, user: User) -> UUID:
         if user.id is None:
             raise ValueError("Cannot create a session for a user without an ID")
         session_id = uuid4()
@@ -41,3 +41,6 @@ class AuthService:
         await backend.create(session_id, data)
 
         return session_id
+
+    async def terminate_session(self, session_id: UUID) -> None:
+        await backend.delete(session_id)
