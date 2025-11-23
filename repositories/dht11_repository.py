@@ -2,7 +2,7 @@ from datetime import datetime
 from typing import Any
 from fastapi_pagination import LimitOffsetPage
 from fastapi_pagination.ext.sqlmodel import paginate
-from sqlmodel import func, select, asc, desc, Session
+from sqlmodel import String, cast, func, select, asc, desc, Session
 from models.dht11 import DHT11Reading
 from schemas.dht11 import DHT11ReadingData
 
@@ -32,10 +32,11 @@ class DHT11Repository:
     ) -> list[Any]:
         """Execute aggregation query and return aggregated database results."""
 
-        # Assign expressions to variables
-        time_bucket = func.strftime(time_format, DHT11Reading.timestamp).label(
-            "time_bucket"
-        )
+        # PostgreSQL uses to_char for timestamp formatting
+        time_bucket = cast(
+            func.to_char(DHT11Reading.timestamp, time_format), String
+        ).label("time_bucket")
+        
         avg_temp = func.avg(DHT11Reading.temperature).label("avg_temperature")
         avg_hum = func.avg(DHT11Reading.humidity).label("avg_humidity")
         min_temp = func.min(DHT11Reading.temperature).label("min_temperature")

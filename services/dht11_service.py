@@ -1,8 +1,5 @@
 from datetime import datetime
 from typing import Literal
-from sqlmodel import Session
-from fastapi_pagination.limit_offset import LimitOffsetPage
-from fastapi_pagination.ext.sqlmodel import paginate
 from repositories.dht11_repository_protocol import DHT11RepositoryProtocol
 from schemas.dht11 import DHT11ChartData, DHT11ReadingData
 from models.dht11 import DHT11Reading
@@ -35,13 +32,13 @@ class DHT11Service:
         if start_date > end_date:
             raise ValueError("start_date must be before end_date")
 
-        # Define time bucket based on group_by
+        # Define time bucket based on group_by (PostgreSQL format)
         time_format = {
-            "minute": "%Y-%m-%d %H:%M:00",
-            "hour": "%Y-%m-%d %H:00:00",
-            "day": "%Y-%m-%d",
-            "week": "%Y-%W",
-            "month": "%Y-%m",
+            "minute": "YYYY-MM-DD HH24:MI:00",
+            "hour": "YYYY-MM-DD HH24:00:00",
+            "day": "YYYY-MM-DD",
+            "week": "IYYY-IW",  # ISO year and ISO week
+            "month": "YYYY-MM",
         }[group_by]
 
         results = self.dht11_repo.get_aggregated_readings(
@@ -50,7 +47,7 @@ class DHT11Service:
 
         return [
             DHT11ChartData(
-                timestamp=datetime.fromisoformat(r.time_bucket),
+                timestamp=self._parse_time_bucket(r.time_bucket, group_by),
                 avg_temperature=round(r.avg_temperature, 2),
                 avg_humidity=round(r.avg_humidity, 2),
                 min_temperature=(
@@ -65,6 +62,24 @@ class DHT11Service:
             )
             for r in results
         ]
+
+    def _parse_time_bucket(self, time_bucket: str, group_by: str) -> datetime:
+        """Parse time bucket string back to datetime based on grouping."""
+        if group_by == "minute":
+            return datetime.strptime(time_bucket, "%Y-%m-%d %H:%M:%S")
+        elif group_by == "hour":
+            return datetime.strptime(time_bucket, "%Y-%m-%d %H:%M:%S")
+        elif group_by == "day":
+            return datetime.strptime(time_bucket, "%Y-%m-%d")
+        elif group_by == "week":
+            # PostgreSQL ISO week format: "2025-47"
+            year, week = time_bucket.split("-")
+            # Get first day of the ISO week
+            return datetime.strptime(f"{year}-W{week}-1", "%G-W%V-%u")
+        elif group_by == "month":
+            return datetime.strptime(time_bucket + "-01", "%Y-%m-%d")
+        else:
+            raise ValueError(f"Unknown group_by: {group_by}")
 
     def create_reading(self, reading_data: DHT11ReadingData) -> DHT11Reading:
         """Create a new DHT11 reading."""
