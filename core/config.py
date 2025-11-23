@@ -9,7 +9,7 @@ class Settings(BaseSettings):
     environment: str = "dev"
     cors_origins: List[str] = ["http://localhost:3000"]
     database_url: str
-    secret_key: str 
+    secret_key: str
 
 
-settings = Settings() # type: ignore
+settings = Settings()  # type: ignore
