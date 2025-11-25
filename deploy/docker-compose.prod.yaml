@@ -1,6 +1,6 @@
 services:
   app:
-    image: iot-dht-backend:0.1
+    image: ilyasberkani/iot-dht-backend:0.1
     container_name: fastapi_app_prod
     env_file:
       - .env.prod
