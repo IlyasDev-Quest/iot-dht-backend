@@ -1,13 +1,13 @@
 services:
   app:
-    image: ilyasberkani/iot-dht-backend:0.1
+    image: ${APP_IMAGE}
     container_name: fastapi_app_prod
     env_file:
       - .env.prod
     command: sh -c "alembic upgrade head && uvicorn main:app --host=0.0.0.0 --port=8000 --workers=2"
 
   nginx:
-    image: nginx:alpine
+    image: ${NGINX_IMAGE}
     container_name: nginx_service
     ports:
       - "80:80"
