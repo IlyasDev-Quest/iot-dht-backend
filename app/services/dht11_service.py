@@ -65,21 +65,26 @@ class DHT11Service:
 
     def _parse_time_bucket(self, time_bucket: str, group_by: str) -> datetime:
         """Parse time bucket string back to datetime based on grouping."""
+        from datetime import timezone
+
         if group_by == "minute":
-            return datetime.strptime(time_bucket, "%Y-%m-%d %H:%M:%S")
+            dt = datetime.strptime(time_bucket, "%Y-%m-%d %H:%M:%S")
         elif group_by == "hour":
-            return datetime.strptime(time_bucket, "%Y-%m-%d %H:%M:%S")
+            dt = datetime.strptime(time_bucket, "%Y-%m-%d %H:%M:%S")
         elif group_by == "day":
-            return datetime.strptime(time_bucket, "%Y-%m-%d")
+            dt = datetime.strptime(time_bucket, "%Y-%m-%d")
         elif group_by == "week":
             # PostgreSQL ISO week format: "2025-47"
             year, week = time_bucket.split("-")
             # Get first day of the ISO week
-            return datetime.strptime(f"{year}-W{week}-1", "%G-W%V-%u")
+            dt = datetime.strptime(f"{year}-W{week}-1", "%G-W%V-%u")
         elif group_by == "month":
-            return datetime.strptime(time_bucket + "-01", "%Y-%m-%d")
+            dt = datetime.strptime(time_bucket + "-01", "%Y-%m-%d")
         else:
             raise ValueError(f"Unknown group_by: {group_by}")
+
+        # Make the datetime UTC-aware
+        return dt.replace(tzinfo=timezone.utc)
 
     def create_reading(self, reading_data: DHT11ReadingData) -> DHT11Reading:
         """Create a new DHT11 reading."""

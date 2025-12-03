@@ -31,10 +31,10 @@ class DHT11Repository:
         self, start_date: datetime, end_date: datetime, time_format: str
     ) -> list[Any]:
         """Execute aggregation query and return aggregated database results."""
-
-        # PostgreSQL uses to_char for timestamp formatting
+        # Convert timestamp to UTC, then format it
         time_bucket = cast(
-            func.to_char(DHT11Reading.timestamp, time_format), String
+            func.to_char(func.timezone("UTC", DHT11Reading.timestamp), time_format),
+            String,
         ).label("time_bucket")
 
         avg_temp = func.avg(DHT11Reading.temperature).label("avg_temperature")
@@ -62,7 +62,6 @@ class DHT11Repository:
             .group_by(time_bucket)
             .order_by(time_bucket)
         )
-
         results = self.session.exec(stmt).all()
         return results
 
