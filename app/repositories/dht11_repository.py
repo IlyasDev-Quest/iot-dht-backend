@@ -36,7 +36,7 @@ class DHT11Repository:
         time_bucket = cast(
             func.to_char(DHT11Reading.timestamp, time_format), String
         ).label("time_bucket")
-        
+
         avg_temp = func.avg(DHT11Reading.temperature).label("avg_temperature")
         avg_hum = func.avg(DHT11Reading.humidity).label("avg_humidity")
         min_temp = func.min(DHT11Reading.temperature).label("min_temperature")

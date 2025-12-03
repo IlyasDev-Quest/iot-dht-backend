@@ -4,7 +4,6 @@ from schemas.user import UserSchema
 from dependencies import UserServiceDep
 from schemas.session import SessionData
 from core.session.verifier import verifier
-from core.session.backend import session_backend
 from core.session.frontend import cookie
 
 router = APIRouter(prefix="/users", tags=["users"])
