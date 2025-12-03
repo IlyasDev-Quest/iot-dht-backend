@@ -6,8 +6,8 @@ COMPOSE_PROD_ENV=deploy/compose.env
 # Targets
 .PHONY: dev up down prod-up prod-down migrate
 
-DC_PROD=docker compose -f $(COMPOSE_PROD) --env-file $(COMPOSE_PROD_ENV)
-DC_DEV=docker compose -f $(COMPOSE_DEV)
+DC_PROD=docker-compose -f $(COMPOSE_PROD) --env-file $(COMPOSE_PROD_ENV)
+DC_DEV=docker-compose -f $(COMPOSE_DEV)
 
 # Development
 dev-build:
@@ -28,6 +28,9 @@ dev-logs:
 dev-ps:
 	$(DC_DEV) ps
 
+dev-enter:
+	$(DC_DEV) exec app sh
+
 # Production
 prod-up:
 	$(DC_PROD) up -d
@@ -43,4 +46,3 @@ prod-logs:
 
 prod-ps:
 	$(DC_PROD) ps
-
