@@ -1,0 +1,32 @@
+# Git
+.git
+.gitignore
+.gitattributes
+
+# Python cache
+__pycache__/
+*.py[cod]
+
+# Logs
+*.log
+*.sqlite3
+
+# Virtual environments
+.env
+.venv/
+venv/
+
+# Build / packaging
+build/
+dist/
+*.egg-info/
+
+# PyInstaller / PyBuilder
+*.spec
+target/
+
+# IDEs / editors
+.idea/
+.vscode/
+*.swp
+.ropeproject/
