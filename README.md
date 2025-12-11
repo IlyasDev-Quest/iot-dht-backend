@@ -232,11 +232,6 @@ iot-dht-backend/
 - `make prod-logs` - Tail logs
 - `make prod-ps` - List running containers
 
-### Database Migrations
-
-- `make dev-migrate` - Run Alembic migrations in dev
-- `make prod-migrate` - Run Alembic migrations in prod
-
 ---
 
 ## Notes 📝
